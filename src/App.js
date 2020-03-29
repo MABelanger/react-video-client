@@ -47,7 +47,7 @@ function App() {
     };
 
     pc.ontrack = e => {
-      console.log("e", e);
+      console.log("pc.ontrack(e)", e);
       remoteVideoRef.current.srcObject = e.streams[0];
     };
   }
