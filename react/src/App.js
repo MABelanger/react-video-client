@@ -5,14 +5,14 @@ function App() {
   let remoteVideoRef = useRef(null);
   let textRef = useRef(null);
 
-  const pcConfig = null;
-  // const pcConfig = {
-  //   "iceServers": [{
-  //     urls: '',
-  //     credential: '',
-  //     username: ''
-  //   }]
-  // }
+  // const pcConfig = null;
+  const pcConfig = {
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302"
+      }
+    ]
+  };
   const pc = new RTCPeerConnection(pcConfig);
 
   function onSuccess(stream) {
