@@ -1,0 +1,20 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "build:delete": "rm -rf ./build",
+    "build:copy": "cp -R ../react/build ./",
+    "build:react": "npm run build --prefix ../react/",
+    "deploy": "npm run build:delete; npm run build:react; npm run build:copy",
+    "start:dev": "./node_modules/nodemon/bin/nodemon.js server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2",
+    "socket.io": "^2.3.0"
+  }
+}
