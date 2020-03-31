@@ -1,9 +1,14 @@
 import React, { useRef, useEffect, useState } from "react";
 
+import io from "socket.io-client";
+
+let candidates = [];
+
 function App() {
   let localVideoRef = useRef(null);
   let remoteVideoRef = useRef(null);
   let textRef = useRef(null);
+  let socket = useRef(null);
 
   // const pcConfig = null;
   const pcConfig = {
@@ -14,6 +19,12 @@ function App() {
     ]
   };
   const pc = new RTCPeerConnection(pcConfig);
+
+  useEffect(() => {
+    connectPeer();
+    startCamera();
+    connectSocketIo();
+  }, []);
 
   function onSuccess(stream) {
     const tracks = stream.getTracks();
@@ -39,6 +50,8 @@ function App() {
     pc.onicecandidate = e => {
       if (e.candidate) {
         console.log(JSON.stringify(e.candidate));
+
+        sendToPeer("candidate", e.candidate);
       }
     };
 
@@ -58,6 +71,7 @@ function App() {
       .then(sdp => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
+        sendToPeer("offerOrAnswer", sdp);
       })
       .catch(e => {
         console.log(e);
@@ -75,6 +89,8 @@ function App() {
       .then(sdp => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
+
+        sendToPeer("offerOrAnswer", sdp);
       })
       .catch(e => {
         console.log(e);
@@ -87,10 +103,31 @@ function App() {
     pc.addIceCandidate(new RTCIceCandidate(candidate));
   }
 
-  useEffect(() => {
-    connectPeer();
-    startCamera();
-  }, []);
+  function connectSocketIo() {
+    socket = io("/webrtcPeer", {
+      path: "/webrtc",
+      query: {}
+    });
+
+    socket.on("connection-success", success => {
+      console.log(success);
+    });
+
+    socket.on("offerOrAnswer", sdp => {
+      textRef.current.value = JSON.stringify(sdp);
+    });
+
+    socket.on("candidate", candidate => {
+      candidates = [...candidates, candidate];
+    });
+  }
+
+  function sendToPeer(messageType, payload) {
+    socket.emit(messageType, {
+      socketID: socket.id,
+      payload
+    });
+  }
 
   function renderVideo(ref, color) {
     return (
