@@ -10,14 +10,14 @@ function App() {
   let textRef = useRef(null);
   let socket = useRef(null);
 
-  // const pcConfig = null;
-  const pcConfig = {
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302"
-      }
-    ]
-  };
+  const pcConfig = null;
+  // const pcConfig = {
+  //   iceServers: [
+  //     {
+  //       urls: "stun:stun.l.google.com:19302"
+  //     }
+  //   ]
+  // };
   const pc = new RTCPeerConnection(pcConfig);
 
   useEffect(() => {
@@ -98,9 +98,14 @@ function App() {
   }
 
   function addCandidate() {
-    const candidate = JSON.parse(textRef.current.value);
-    console.log("Adding candidate:", candidate);
-    pc.addIceCandidate(new RTCIceCandidate(candidate));
+    // const candidate = JSON.parse(textRef.current.value);
+    // console.log("Adding candidate:", candidate);
+    // pc.addIceCandidate(new RTCIceCandidate(candidate));
+
+    candidates.forEach(candidate => {
+      console.log(JSON.stringify(candidate));
+      pc.addIceCandidate(new RTCIceCandidate(candidate));
+    });
   }
 
   function connectSocketIo() {
