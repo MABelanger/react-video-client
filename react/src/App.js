@@ -10,14 +10,22 @@ function App() {
   let textRef = useRef(null);
   let socket = useRef(null);
 
-  const pcConfig = null;
+  // const pcConfig = null;
+  const pcConfig = {
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302"
+      }
+    ]
+  };
   // const pcConfig = {
   //   iceServers: [
   //     {
-  //       urls: "stun:stun.l.google.com:19302"
+  //       urls: "stun:173.194.207.127:19302"
   //     }
   //   ]
   // };
+
   const pc = new RTCPeerConnection(pcConfig);
 
   useEffect(() => {
