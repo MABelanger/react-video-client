@@ -1,11 +1,26 @@
 const express = require("express");
 
+const utils = require("./utils");
+const dotenv = require("dotenv");
+
+// read .env file and add it to process.env
+dotenv.config();
+// use the default env if .env is  not set.
+if (
+  !(
+    process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "production"
+  )
+) {
+  utils.overwriteEnv(".env.default.development");
+}
+
 let io = require("socket.io")({
   path: "/webrtc"
 });
 
 const app = express();
-const port = 8080;
+const port = process.env.PORT;
 
 app.use(express.static(__dirname + "/build"));
 app.get("/", (req, res) => {
