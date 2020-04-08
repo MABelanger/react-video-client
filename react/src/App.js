@@ -51,7 +51,7 @@ function App() {
       navigator.getUserMedia ||
       navigator.webkitGetUserMedia ||
       navigator.mozGetUserMedia;
-    navigator.getUserMedia({ video: true }, onSuccess, onFailure);
+    navigator.getUserMedia({ video: true, audio: true }, onSuccess, onFailure);
   }
 
   function connectPeer() {
@@ -86,11 +86,6 @@ function App() {
       });
   }
 
-  function setRemoteDescription() {
-    const desc = JSON.parse(textRef.current.value);
-    pc.setRemoteDescription(new RTCSessionDescription(desc));
-  }
-
   function createAnswer() {
     console.log("Answer");
     pc.createAnswer({ offerToReceiveVideo: 1 })
@@ -103,17 +98,6 @@ function App() {
       .catch((e) => {
         console.log(e);
       });
-  }
-
-  function addCandidate() {
-    // const candidate = JSON.parse(textRef.current.value);
-    // console.log("Adding candidate:", candidate);
-    // pc.addIceCandidate(new RTCIceCandidate(candidate));
-
-    candidates.forEach((candidate) => {
-      console.log(JSON.stringify(candidate));
-      pc.addIceCandidate(new RTCIceCandidate(candidate));
-    });
   }
 
   function connectSocketIo() {
@@ -143,11 +127,12 @@ function App() {
     });
   }
 
-  function renderVideo(ref, color) {
+  function renderVideo(ref, color, isMuted) {
     return (
       <div>
         <video
           autoPlay
+          muted={isMuted}
           ref={ref}
           style={{
             width: 240,
@@ -162,14 +147,12 @@ function App() {
 
   return (
     <div className="App">
-      {renderVideo(localVideoRef, "black")}
+      {renderVideo(localVideoRef, "black", true)}
       <button onClick={createOffer}>Offer</button>
       <button onClick={createAnswer}>Answer</button>
       <br />
       <textarea ref={textRef} />
-      {/* <button onClick={setRemoteDescription}>setRemoteDescription</button>
-      <button onClick={addCandidate}>addCandidate</button> */}
-      {renderVideo(remoteVideoRef, "yellow")}
+      {renderVideo(remoteVideoRef, "yellow", false)}
     </div>
   );
 }
