@@ -14,9 +14,9 @@ function App() {
   const pcConfig = {
     iceServers: [
       {
-        urls: "stun:stun.l.google.com:19302"
-      }
-    ]
+        urls: "stun:stun.l.google.com:19302",
+      },
+    ],
   };
   // const pcConfig = {
   //   iceServers: [
@@ -36,7 +36,7 @@ function App() {
 
   function onSuccess(stream) {
     const tracks = stream.getTracks();
-    tracks.forEach(track =>
+    tracks.forEach((track) =>
       pc.addTrack(track, (localVideoRef.current.srcObject = stream))
     );
     // pc.addTrack(tracks[0]);
@@ -55,7 +55,7 @@ function App() {
   }
 
   function connectPeer() {
-    pc.onicecandidate = e => {
+    pc.onicecandidate = (e) => {
       if (e.candidate) {
         console.log(JSON.stringify(e.candidate));
 
@@ -63,11 +63,11 @@ function App() {
       }
     };
 
-    pc.oniceconnectionstatechange = e => {
+    pc.oniceconnectionstatechange = (e) => {
       console.log(e);
     };
 
-    pc.ontrack = e => {
+    pc.ontrack = (e) => {
       console.log("pc.ontrack(e)", e);
       remoteVideoRef.current.srcObject = e.streams[0];
     };
@@ -76,12 +76,12 @@ function App() {
   function createOffer() {
     console.log("Offer");
     pc.createOffer({ offerToReceiveVideo: 1 })
-      .then(sdp => {
+      .then((sdp) => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
         sendToPeer("offerOrAnswer", sdp);
       })
-      .catch(e => {
+      .catch((e) => {
         console.log(e);
       });
   }
@@ -94,13 +94,13 @@ function App() {
   function createAnswer() {
     console.log("Answer");
     pc.createAnswer({ offerToReceiveVideo: 1 })
-      .then(sdp => {
+      .then((sdp) => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
 
         sendToPeer("offerOrAnswer", sdp);
       })
-      .catch(e => {
+      .catch((e) => {
         console.log(e);
       });
   }
@@ -110,7 +110,7 @@ function App() {
     // console.log("Adding candidate:", candidate);
     // pc.addIceCandidate(new RTCIceCandidate(candidate));
 
-    candidates.forEach(candidate => {
+    candidates.forEach((candidate) => {
       console.log(JSON.stringify(candidate));
       pc.addIceCandidate(new RTCIceCandidate(candidate));
     });
@@ -119,26 +119,27 @@ function App() {
   function connectSocketIo() {
     socket = io("/webrtcPeer", {
       path: "/webrtc",
-      query: {}
+      query: {},
     });
 
-    socket.on("connection-success", success => {
+    socket.on("connection-success", (success) => {
       console.log(success);
     });
 
-    socket.on("offerOrAnswer", sdp => {
+    socket.on("offerOrAnswer", (sdp) => {
       textRef.current.value = JSON.stringify(sdp);
+      pc.setRemoteDescription(new RTCSessionDescription(sdp));
     });
 
-    socket.on("candidate", candidate => {
-      candidates = [...candidates, candidate];
+    socket.on("candidate", (candidate) => {
+      pc.addIceCandidate(new RTCIceCandidate(candidate));
     });
   }
 
   function sendToPeer(messageType, payload) {
     socket.emit(messageType, {
       socketID: socket.id,
-      payload
+      payload,
     });
   }
 
@@ -152,7 +153,7 @@ function App() {
             width: 240,
             height: 240,
             margin: 5,
-            backgroundColor: color
+            backgroundColor: color,
           }}
         ></video>
       </div>
@@ -166,8 +167,8 @@ function App() {
       <button onClick={createAnswer}>Answer</button>
       <br />
       <textarea ref={textRef} />
-      <button onClick={setRemoteDescription}>setRemoteDescription</button>
-      <button onClick={addCandidate}>addCandidate</button>
+      {/* <button onClick={setRemoteDescription}>setRemoteDescription</button>
+      <button onClick={addCandidate}>addCandidate</button> */}
       {renderVideo(remoteVideoRef, "yellow")}
     </div>
   );
