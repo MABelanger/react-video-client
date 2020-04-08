@@ -14,6 +14,7 @@ function App() {
   let remoteVideoRef = useRef(null);
   let textRef = useRef(null);
   let socket = useRef(null);
+  let intervalId = useRef(null);
 
   // const pcConfig = null;
   const pcConfig = {
@@ -85,6 +86,7 @@ function App() {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
         sendToPeer("offerOrAnswer", sdp);
+        createOfferTelephoneSound();
       })
       .catch((e) => {
         console.log(e);
@@ -93,6 +95,7 @@ function App() {
 
   function createAnswer() {
     console.log("Answer");
+    sendToPeer("offerStopTelephoneSound", "");
     pc.createAnswer({ offerToReceiveVideo: 1 })
       .then((sdp) => {
         console.log(JSON.stringify(sdp));
@@ -116,7 +119,6 @@ function App() {
     });
 
     socket.on("offerOrAnswer", (sdp) => {
-      playClickAudio();
       textRef.current.value = JSON.stringify(sdp);
       pc.setRemoteDescription(new RTCSessionDescription(sdp));
     });
@@ -125,9 +127,22 @@ function App() {
       playClickAudio();
     });
 
+    socket.on("offerStopTelephoneSound", () => {
+      clearInterval(intervalId.current);
+    });
+
     socket.on("candidate", (candidate) => {
       pc.addIceCandidate(new RTCIceCandidate(candidate));
     });
+  }
+
+  function createOfferTelephoneSound() {
+    sendToPeer("offerTelephoneSound", "");
+    console.log("offerTelephoneSound");
+    intervalId.current = setInterval(() => {
+      console.log("createOfferTelephoneSound");
+      sendToPeer("offerTelephoneSound", "");
+    }, 2000);
   }
 
   function sendToPeer(messageType, payload) {

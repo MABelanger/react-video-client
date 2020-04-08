@@ -58,12 +58,22 @@ peers.on("connection", (socket) => {
     }
   });
 
-  socket.on("offerTelephoneSound", () => {
+  socket.on("offerTelephoneSound", (data) => {
     // send to the other peer(s) if any
     for (const [socketID, socket] of connectedPeers.entries()) {
       // don't send to self
       if (socketID !== data.socketID) {
         socket.emit("offerTelephoneSound", "");
+      }
+    }
+  });
+
+  socket.on("offerStopTelephoneSound", (data) => {
+    // send to the other peer(s) if any
+    for (const [socketID, socket] of connectedPeers.entries()) {
+      // don't send to self
+      if (socketID !== data.socketID) {
+        socket.emit("offerStopTelephoneSound", "");
       }
     }
   });
