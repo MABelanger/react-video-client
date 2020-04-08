@@ -2,7 +2,12 @@ import React, { useRef, useEffect, useState } from "react";
 
 import io from "socket.io-client";
 
-let candidates = [];
+import clickSound from "./data/telephone-sound.base64.json";
+
+export function playClickAudio() {
+  let audio = new Audio("data:audio/mp3;base64," + clickSound.base64);
+  audio.play();
+}
 
 function App() {
   let localVideoRef = useRef(null);
@@ -111,8 +116,13 @@ function App() {
     });
 
     socket.on("offerOrAnswer", (sdp) => {
+      playClickAudio();
       textRef.current.value = JSON.stringify(sdp);
       pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    });
+
+    socket.on("offerTelephoneSound", () => {
+      playClickAudio();
     });
 
     socket.on("candidate", (candidate) => {
