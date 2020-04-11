@@ -28,6 +28,17 @@ export function AppText() {
   const pc = new RTCPeerConnection(pcConfig);
   const dataChannel = pc.createDataChannel("chat");
 
+  dataChannel.onopen = (event) => {
+    console.log("->>> dataChannel.onopen");
+    dataChannel.send("Hi I want to chat");
+  };
+
+  // prit the received message
+  dataChannel.onmessage = (event) => {
+    console.log("->>>> onmessage");
+    console.log(event.data);
+  };
+
   useEffect(() => {
     connectPeer();
     // text...
@@ -49,13 +60,13 @@ export function AppText() {
   }
 
   function createOffer() {
-    console.log("Offer");
+    console.log("->>> Offer");
     pc.createOffer({ offerToReceiveVideo: 1 })
       .then((sdp) => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
         sendToPeer("offerOrAnswer", sdp);
-        createOfferTelephoneSound();
+        // createOfferTelephoneSound();
       })
       .catch((e) => {
         console.log(e);
@@ -75,6 +86,17 @@ export function AppText() {
       .catch((e) => {
         console.log(e);
       });
+
+    pc.ondatachannel = function (event) {
+      console.log("->>> ondatachannel");
+      let _dataChannel = event.channel;
+      _dataChannel.onopen = function (event) {
+        _dataChannel.send("Hi back!");
+      };
+      _dataChannel.onmessage = function (event) {
+        console.log(event.data);
+      };
+    };
   }
 
   function connectSocketIo() {
