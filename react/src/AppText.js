@@ -19,7 +19,7 @@ export function AppText() {
   const pc = new RTCPeerConnection(pcConfig);
   let offerDataChannel = pc.createDataChannel("chat");
 
-  function handleMessage(event) {
+  function handleReceivedMessage(event) {
     console.log("I receive data from remote: ", event.data);
   }
 
@@ -61,7 +61,7 @@ export function AppText() {
 
       offerDataChannel.send("Hi I want to chat");
     };
-    offerDataChannel.onmessage = handleMessage;
+    offerDataChannel.onmessage = handleReceivedMessage;
   }
 
   function createAnswer() {
@@ -83,7 +83,7 @@ export function AppText() {
       answerDataChannel.onopen = function (event) {
         answerDataChannel.send("Hi back!");
       };
-      answerDataChannel.onmessage = handleMessage;
+      answerDataChannel.onmessage = handleReceivedMessage;
     };
   }
 
