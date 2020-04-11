@@ -2,19 +2,10 @@ import React, { useRef, useEffect, useState } from "react";
 
 import io from "socket.io-client";
 
-import clickSound from "./data/telephone-sound.base64.json";
-
-export function playClickAudio() {
-  let audio = new Audio("data:audio/mp3;base64," + clickSound.base64);
-  audio.play();
-}
-
 export function AppText() {
-  let localVideoRef = useRef(null);
-  let remoteVideoRef = useRef(null);
-  let textRef = useRef(null);
+  let signalingTextRef = useRef(null);
+  // let signalingTextRef = useRef(null);
   let socket = useRef(null);
-  let intervalId = useRef(null);
 
   // const pcConfig = null;
   const pcConfig = {
@@ -26,18 +17,11 @@ export function AppText() {
   };
 
   const pc = new RTCPeerConnection(pcConfig);
-  const dataChannel = pc.createDataChannel("chat");
+  let offerDataChannel = pc.createDataChannel("chat");
 
-  dataChannel.onopen = (event) => {
-    console.log("->>> dataChannel.onopen");
-    dataChannel.send("Hi I want to chat");
-  };
-
-  // prit the received message
-  dataChannel.onmessage = (event) => {
-    console.log("->>>> onmessage");
-    console.log(event.data);
-  };
+  function handleMessage(event) {
+    console.log("I receive data from remote: ", event.data);
+  }
 
   useEffect(() => {
     connectPeer();
@@ -49,7 +33,6 @@ export function AppText() {
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         console.log(JSON.stringify(e.candidate));
-
         sendToPeer("candidate", e.candidate);
       }
     };
@@ -60,22 +43,28 @@ export function AppText() {
   }
 
   function createOffer() {
-    console.log("->>> Offer");
+    console.log("createOffer");
     pc.createOffer({ offerToReceiveVideo: 1 })
       .then((sdp) => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
         sendToPeer("offerOrAnswer", sdp);
-        // createOfferTelephoneSound();
       })
       .catch((e) => {
         console.log(e);
       });
+
+    offerDataChannel.onopen = (event) => {
+      console.log("->>> dataChannel.onopen");
+      // prit the received message
+
+      offerDataChannel.send("Hi I want to chat");
+    };
+    offerDataChannel.onmessage = handleMessage;
   }
 
   function createAnswer() {
-    console.log("Answer");
-    sendToPeer("offerStopTelephoneSound", "");
+    console.log("createAnswer");
     pc.createAnswer({ offerToReceiveVideo: 1 })
       .then((sdp) => {
         console.log(JSON.stringify(sdp));
@@ -89,13 +78,11 @@ export function AppText() {
 
     pc.ondatachannel = function (event) {
       console.log("->>> ondatachannel");
-      let _dataChannel = event.channel;
-      _dataChannel.onopen = function (event) {
-        _dataChannel.send("Hi back!");
+      let answerDataChannel = event.channel;
+      answerDataChannel.onopen = function (event) {
+        answerDataChannel.send("Hi back!");
       };
-      _dataChannel.onmessage = function (event) {
-        console.log(event.data);
-      };
+      answerDataChannel.onmessage = handleMessage;
     };
   }
 
@@ -110,30 +97,13 @@ export function AppText() {
     });
 
     socket.on("offerOrAnswer", (sdp) => {
-      textRef.current.value = JSON.stringify(sdp);
+      signalingTextRef.current.value = JSON.stringify(sdp);
       pc.setRemoteDescription(new RTCSessionDescription(sdp));
-    });
-
-    socket.on("offerTelephoneSound", () => {
-      playClickAudio();
-    });
-
-    socket.on("offerStopTelephoneSound", () => {
-      clearInterval(intervalId.current);
     });
 
     socket.on("candidate", (candidate) => {
       pc.addIceCandidate(new RTCIceCandidate(candidate));
     });
-  }
-
-  function createOfferTelephoneSound() {
-    sendToPeer("offerTelephoneSound", "");
-    console.log("offerTelephoneSound");
-    intervalId.current = setInterval(() => {
-      console.log("createOfferTelephoneSound");
-      sendToPeer("offerTelephoneSound", "");
-    }, 2000);
   }
 
   function sendToPeer(messageType, payload) {
@@ -163,12 +133,16 @@ export function AppText() {
 
   return (
     <div className="App">
-      {renderVideo(localVideoRef, "black", true)}
+      {
+        //renderVideo(localVideoRef, "black", true)
+      }
       <button onClick={createOffer}>Offer</button>
       <button onClick={createAnswer}>Answer</button>
       <br />
-      <textarea ref={textRef} />
-      {renderVideo(remoteVideoRef, "yellow", false)}
+      <textarea ref={signalingTextRef} />
+      {
+        //renderVideo(remoteVideoRef, "yellow", false)
+      }
     </div>
   );
 }
