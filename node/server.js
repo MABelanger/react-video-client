@@ -39,7 +39,7 @@ let connectedPeers = new Map();
 
 peers.on("connection", (socket) => {
   console.log(socket.id);
-  socket.emit("connection-success", { success: socket.id });
+  socket.emit("connectionSocketIoSuccess", { success: socket.id });
   connectedPeers.set(socket.id, socket);
 
   socket.on("disconnect", () => {

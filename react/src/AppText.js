@@ -93,7 +93,7 @@ export function AppText() {
       query: {},
     });
 
-    socket.on("connection-success", (success) => {
+    socket.on("connectionSocketIoSuccess", (success) => {
       console.log(success);
     });
 
