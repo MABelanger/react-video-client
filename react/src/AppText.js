@@ -23,17 +23,12 @@ export function AppText() {
     console.log("I receive data from remote: ", event.data);
   }
 
-  useEffect(() => {
-    connectPeer();
-    // text...
-    connectSocketIo();
-  }, []);
-
-  function connectPeer() {
+  function sendCandidateToPeer() {
     pc.onicecandidate = (e) => {
+      console.log("->>>>onicecandidate");
       if (e.candidate) {
         console.log(JSON.stringify(e.candidate));
-        sendToPeer("candidate", e.candidate);
+        sendSocketIoToPeer("candidate", e.candidate);
       }
     };
 
@@ -42,13 +37,19 @@ export function AppText() {
     };
   }
 
+  useEffect(() => {
+    sendCandidateToPeer();
+    // text...
+    connectSocketIo();
+  }, []);
+
   function createOffer() {
     console.log("createOffer");
     pc.createOffer({ offerToReceiveVideo: 1 })
       .then((sdp) => {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
-        sendToPeer("offerOrAnswer", sdp);
+        sendSocketIoToPeer("offerOrAnswer", sdp);
       })
       .catch((e) => {
         console.log(e);
@@ -70,7 +71,7 @@ export function AppText() {
         console.log(JSON.stringify(sdp));
         pc.setLocalDescription(sdp);
 
-        sendToPeer("offerOrAnswer", sdp);
+        sendSocketIoToPeer("offerOrAnswer", sdp);
       })
       .catch((e) => {
         console.log(e);
@@ -106,7 +107,7 @@ export function AppText() {
     });
   }
 
-  function sendToPeer(messageType, payload) {
+  function sendSocketIoToPeer(messageType, payload) {
     socket.emit(messageType, {
       socketID: socket.id,
       payload,
